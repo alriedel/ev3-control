@@ -2,6 +2,7 @@
 import evdev
 import ev3dev.ev3 as ev3
 from ev3dev.ev3 import Leds
+from ev3dev.ev3 import MediumMotor
 import threading
 from time import sleep
 from motor_thread import MotorThread
@@ -75,12 +76,14 @@ def scale_inc_x_dec_speed(x):
     return (NON_STRAIGHT_INT - (x % NON_STRAIGHT_INT))/NON_STRAIGHT_INT * SPEED_MAX
 
 class StickEventHandler(threading.Thread):
-    def __init__(self, motor_thread):
+    def __init__(self, motor_thread, medium_motor):
         self.running      = True
         self.last_x       = 0
         self.last_y       = 0
         self.e            = threading.Event()
         self.motor_thread = motor_thread
+        self.medium_motor = medium_motor
+        self.action       = None
         threading.Thread.__init__(self)
 
     def run(self):
@@ -91,6 +94,12 @@ class StickEventHandler(threading.Thread):
                                           self.last_x,
                                           self.last_y)
             self.motor_thread.set_speed(speed)
+            if self.action == "on":
+                self.medium_motor.run_direct(duty_cycle_sp=-100)
+                self.action = None
+            elif self.action == "off":
+                self.medium_motor.run_direct(duty_cycle_sp=0)
+                self.action = None
             self.e.clear()
 
     def stop(self):
@@ -106,6 +115,13 @@ class StickEventHandler(threading.Thread):
         self.last_y = y
         self.e.set()
 
+    def medium_motor_on(self):
+        self.action = "on"
+        self.e.set()
+
+    def medium_motor_off(self):
+        self.action = "off"
+        self.e.set()
 
 def main():
     devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
@@ -118,9 +134,10 @@ def main():
     motor_thread = MotorThread(ev3.OUTPUT_B, ev3.OUTPUT_C)
     motor_thread.start()
 
-    stick_event_handler = StickEventHandler(motor_thread)
+    medium_motor = MediumMotor(ev3.OUTPUT_A)
+    stick_event_handler = StickEventHandler(motor_thread, medium_motor)
     stick_event_handler.start()
-
+    
     print ("And here we go... (start moving the right stick on the controller!).")
     Leds.set_color(Leds.LEFT, Leds.ORANGE)
     Leds.set_color(Leds.RIGHT, Leds.ORANGE)
@@ -130,6 +147,11 @@ def main():
                 stick_event_handler.set_x(event.value)
             elif event.code == 5: #Y axis on right stick
                 stick_event_handler.set_y(event.value)
+        elif event.type == 1 and event.code == 298:
+            if event.value == 1:
+                stick_event_handler.medium_motor_on()
+            else:
+                stick_event_handler.medium_motor_off()
         elif event.type == 1 and event.code == 302 and event.value == 1:
             print ("X button is pressed. Stopping.")
             break
