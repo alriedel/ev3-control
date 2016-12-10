@@ -32,9 +32,9 @@ RIGHT_TURN_MAX = RIGHT_ROT_MIN
 def choose_move_action(x):
     if x > FOR_BACK_MIN and x < FOR_BACK_MAX:
         return "FOR_BACK"
-    elif x > LEFT_ROT_MIN and x < LEFT_ROT_MAX:
+    elif x >= LEFT_ROT_MIN and x < LEFT_ROT_MAX:
         return "LEFT_ROTATE"
-    elif x > RIGHT_ROT_MIN and x < RIGHT_ROT_MAX:
+    elif x > RIGHT_ROT_MIN and x <= RIGHT_ROT_MAX:
         return "RIGHT_ROTATE"
     elif x < (STICK_MAX / 2):
         return "LEFT_TURN"
