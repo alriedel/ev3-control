@@ -15,7 +15,7 @@ STICK_MAX = 255
 STICK_MIN = 0
 POLARIZATION = -1
 
-FOR_BACK_INT = 40
+FOR_BACK_INT = 50
 FOR_BACK_MIN = round(STICK_MAX / 2) - FOR_BACK_INT / 2
 FOR_BACK_MAX = round(STICK_MAX / 2) + FOR_BACK_INT / 2
 
@@ -58,10 +58,10 @@ def for_back_scaling(y):
     return (sp, sp)
 
 def left_turn_scaling(x):
-    return (scale_inc_x_inc_speed(x) * POLARIZATION, SPEED_MAX * POLARIZATION)
+    return (0, scale_inc_x_dec_speed(x) * POLARIZATION)
 
 def right_turn_scaling(x):
-    return (SPEED_MAX * POLARIZATION, scale_inc_x_dec_speed(x) * POLARIZATION)
+    return (scale_inc_x_inc_speed(x) * POLARIZATION, 0)
 
 def left_rotation_scaling(x):
     return (scale_inc_x_dec_speed(x), SPEED_MAX * POLARIZATION)
