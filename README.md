@@ -7,6 +7,7 @@ Control your Lego Mindstorms EV3 with a ps3-controller, inspiered by http://www.
 * ev3dev installed and working (see http://www.ev3dev.org/docs/getting-started/)
 * a ps3-controller
 * a working python environment (usually pre-installed)
+* package python3-evdev (see https://github.com/rhempel/ev3dev-lang-python)
 
 ## EV3-motors connections
 The program will assume the following:
@@ -18,7 +19,7 @@ The program will assume the following:
 # How-to start
 * boot up ev3dev
 * make sure that all driving motors are connected and that the brick has paired with your ps3-controller
-* navigate into the working directory and run ps3_control.py
+* navigate into the working directory and run `ps3_control.py`
 * when the Leds turn yellow, the program is ready to listen for controller-events
 * use the right stick to drive and the select-button to stop the program
 * use the left upper button to control the medium-motor
