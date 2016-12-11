@@ -88,16 +88,16 @@ class StickEventHandler(threading.Thread):
         print ("StickEventHandler running!")
         while self.running:
             self.e.wait()
-            speed = scale_to_engine_speed(choose_move_action(self.last_x),
-                                          self.last_x,
-                                          self.last_y)
-            self.motor_thread.set_speed(speed)
             if self.action == "on":
                 self.medium_motor.run_direct(duty_cycle_sp=-100)
-                self.action = None
             elif self.action == "off":
                 self.medium_motor.run_direct(duty_cycle_sp=0)
-                self.action = None
+            elif self.action == "drive":
+                speed = scale_to_engine_speed(choose_move_action(self.last_x),
+                                              self.last_x,
+                                              self.last_y)
+                self.motor_thread.set_speed(speed)
+            self.action = None
             self.e.clear()
 
     def stop(self):
@@ -107,10 +107,12 @@ class StickEventHandler(threading.Thread):
 
     def set_x(self, x):
         self.last_x = x
+        self.action = "drive"
         self.e.set()
 
     def set_y(self, y):
         self.last_y = y
+        self.action = "drive"
         self.e.set()
 
     def medium_motor_on(self):
@@ -122,9 +124,9 @@ class StickEventHandler(threading.Thread):
         self.e.set()
 
 def main():
-    led_control = LedControl()
-    led_control.start()
-    led_control.set_color(Leds.AMBER)
+    #led_control = LedControl()
+    #led_control.start()
+    #led_control.set_color(Leds.AMBER)
     
     devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
     for device in devices:
@@ -141,25 +143,30 @@ def main():
     stick_event_handler.start()
     
     print ("And here we go... (start moving the right stick on the controller!).")
-    led_control.blink(Leds.YELLOW)
+    #led_control.blink(Leds.YELLOW)
+    Leds.set_color(Leds.LEFT, Leds.YELLOW)
+    Leds.set_color(Leds.RIGHT, Leds.YELLOW)
     for event in gamepad.read_loop():
         if event.type == 3:             #A stick is moved
             if event.code == 2:   #X axis on right stick
                 stick_event_handler.set_x(event.value)
             elif event.code == 5: #Y axis on right stick
                 stick_event_handler.set_y(event.value)
-        elif event.type == 1 and event.code == 298:
-            if event.value == 1:
-                stick_event_handler.medium_motor_on()
-            else:
-                stick_event_handler.medium_motor_off()
-        elif event.type == 1 and event.code == 302 and event.value == 1:
-            print ("X button is pressed. Stopping.")
-            break
+        elif event.type == 1:
+            if event.code == 298:
+                if event.value == 1:
+                    stick_event_handler.medium_motor_on()
+                else:
+                    stick_event_handler.medium_motor_off()
+            elif event.code == 288:
+                if event.value == 1:
+                    break
 
     motor_thread.stop()
     stick_event_handler.stop()
-    led_control.stop()
+    Leds.set_color(Leds.LEFT, Leds.GREEN)
+    Leds.set_color(Leds.RIGHT, Leds.GREEN)
+    #led_control.stop()
 
 if __name__ == "__main__":
     main()
