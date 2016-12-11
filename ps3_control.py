@@ -6,9 +6,7 @@ from ev3dev.ev3 import MediumMotor
 import threading
 from time import sleep
 from motor_thread import MotorThread
-
-Leds.set_color(Leds.LEFT, Leds.RED)
-Leds.set_color(Leds.RIGHT, Leds.RED)
+from output.led_control import LedControl
 
 SPEED_MAX = 100
 STICK_MAX = 255
@@ -124,6 +122,10 @@ class StickEventHandler(threading.Thread):
         self.e.set()
 
 def main():
+    led_control = LedControl()
+    led_control.start()
+    led_control.set_color(Leds.AMBER)
+    
     devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
     for device in devices:
         if device.name == 'PLAYSTATION(R)3 Controller':
@@ -139,8 +141,7 @@ def main():
     stick_event_handler.start()
     
     print ("And here we go... (start moving the right stick on the controller!).")
-    Leds.set_color(Leds.LEFT, Leds.ORANGE)
-    Leds.set_color(Leds.RIGHT, Leds.ORANGE)
+    led_control.blink(Leds.YELLOW)
     for event in gamepad.read_loop():
         if event.type == 3:             #A stick is moved
             if event.code == 2:   #X axis on right stick
@@ -158,8 +159,7 @@ def main():
 
     motor_thread.stop()
     stick_event_handler.stop()
-    Leds.set_color(Leds.LEFT, Leds.GREEN)
-    Leds.set_color(Leds.RIGHT, Leds.GREEN)
+    led_control.stop()
 
 if __name__ == "__main__":
     main()
