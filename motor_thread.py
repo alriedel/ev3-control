@@ -9,20 +9,24 @@ class MotorThread(threading.Thread):
         self.running     = True
         self.speed_left  = 0
         self.speed_right = 0
+        self.e           = threading.Event()
         threading.Thread.__init__(self)
 
     def run(self):
-        print ("Motor thread running!")
         while self.running:
+            self.e.wait()
             self.left_motor.run_direct(duty_cycle_sp=self.speed_left)
             self.right_motor.run_direct(duty_cycle_sp=self.speed_right)
+            self.e.clear()
 
     def stop(self):
         print ("Motor thread stopping!")
         self.running = False
         self.left_motor.stop()
         self.right_motor.stop()
+        self.e.set()
 
     def set_speed(self, speed):
         self.speed_left  = speed[0]
         self.speed_right = speed[1]
+        self.e.set()
