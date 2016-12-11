@@ -5,7 +5,7 @@ from ev3dev.ev3 import Leds
 from ev3dev.ev3 import MediumMotor
 import threading
 from time import sleep
-from motor_thread import MotorThread
+from output.motor_thread import MotorThread
 from output.led_control import LedControl
 
 SPEED_MAX = 100
