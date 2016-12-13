@@ -1,7 +1,7 @@
 import ev3dev.ev3 as ev3
 import threading
 
-class MotorThread(threading.Thread):
+class MotorControl(threading.Thread):
     """ Simple thread dealing with driving motors """
     def __init__(self, left_motor_out, right_motor_out):
         self.left_motor  = ev3.LargeMotor(left_motor_out)
@@ -20,7 +20,6 @@ class MotorThread(threading.Thread):
             self.e.clear()
 
     def stop(self):
-        print ("Motor thread stopping!")
         self.running = False
         self.left_motor.stop()
         self.right_motor.stop()

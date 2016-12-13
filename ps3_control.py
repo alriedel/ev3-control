@@ -5,7 +5,7 @@ from ev3dev.ev3 import Leds
 from ev3dev.ev3 import MediumMotor
 import threading
 from time import sleep
-from output.motor_thread import MotorThread
+from output.motor_control import MotorControl
 from output.led_control import LedControl
 
 SPEED_MAX = 100
@@ -74,12 +74,12 @@ def scale_inc_x_dec_speed(x):
     return (NON_STRAIGHT_INT - (x % NON_STRAIGHT_INT))/NON_STRAIGHT_INT * SPEED_MAX
 
 class StickEventHandler(threading.Thread):
-    def __init__(self, motor_thread, medium_motor):
+    def __init__(self, motor_control, medium_motor):
         self.running      = True
         self.last_x       = 0
         self.last_y       = 0
         self.e            = threading.Event()
-        self.motor_thread = motor_thread
+        self.motor_control = motor_control
         self.medium_motor = medium_motor
         self.action       = None
         threading.Thread.__init__(self)
@@ -96,7 +96,7 @@ class StickEventHandler(threading.Thread):
                 speed = scale_to_engine_speed(choose_move_action(self.last_x),
                                               self.last_x,
                                               self.last_y)
-                self.motor_thread.set_speed(speed)
+                self.motor_control.set_speed(speed)
             self.action = None
             self.e.clear()
 
@@ -135,11 +135,11 @@ def main():
 
     gamepad = evdev.InputDevice(ps3dev)
 
-    motor_thread = MotorThread(ev3.OUTPUT_B, ev3.OUTPUT_C)
-    motor_thread.start()
+    motor_control = MotorControl(ev3.OUTPUT_B, ev3.OUTPUT_C)
+    motor_control.start()
 
     medium_motor = MediumMotor(ev3.OUTPUT_A)
-    stick_event_handler = StickEventHandler(motor_thread, medium_motor)
+    stick_event_handler = StickEventHandler(motor_control, medium_motor)
     stick_event_handler.start()
     
     print ("And here we go... (start moving the right stick on the controller!).")
@@ -162,7 +162,7 @@ def main():
                 if event.value == 1:
                     break
 
-    motor_thread.stop()
+    motor_control.stop()
     stick_event_handler.stop()
     Leds.set_color(Leds.LEFT, Leds.GREEN)
     Leds.set_color(Leds.RIGHT, Leds.GREEN)
